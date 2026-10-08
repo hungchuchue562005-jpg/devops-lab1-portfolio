@@ -36,6 +36,8 @@ jobs:
 
       # Step 3: Deploy lên GitHub Pages
       - name: Deploy to GitHub Pages
+        permissions:
+          contents: write
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
