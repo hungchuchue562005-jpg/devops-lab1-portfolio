@@ -11,6 +11,16 @@ on:
     branches: [main]       # Chạy khi push lên nhánh main
   workflow_dispatch:        # Cho phép chạy thủ công từ GitHub UI
 
+# Cho phép action tạo và cập nhật nhánh gh-pages.
+# permissions phải ở cấp workflow hoặc job, không nằm trong steps.
+permissions:
+  contents: write
+
+# Các lần deploy chạy lần lượt để không ghi đè lẫn nhau.
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
 # === Các job trong pipeline ===
 jobs:
   # Job 1: Build & Deploy
@@ -26,21 +36,25 @@ jobs:
       - name: Validate HTML
         run: |
           echo "Checking index.html exists..."
-          if [ -f "index.html" ]; then
+          if [ -s "index.html" ]; then
             echo "index.html found!"
             echo "File size: $(wc -c < index.html) bytes"
           else
-            echo " index.html NOT found!"
+            echo "index.html is missing or empty!"
             exit 1
           fi
 
-      # Step 3: Deploy lên GitHub Pages
+      # Step 3: Chỉ đưa nội dung website vào thư mục xuất bản.
+      - name: Prepare Website
+        run: |
+          mkdir -p _site
+          cp index.html _site/index.html
+
+      # Step 4: Deploy lên GitHub Pages
       - name: Deploy to GitHub Pages
-        permissions:
-          contents: write
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./
+          publish_dir: ./_site
           publish_branch: gh-pages
           commit_message: "Auto-deploy from CI pipeline"
