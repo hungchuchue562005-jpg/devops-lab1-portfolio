@@ -38,17 +38,76 @@
         }
         .footer { margin-top: 24px; font-size: 13px; color: #999; }
         .status { color: #38a169; font-weight: bold; }
+
+        /* Mở rộng 1: Avatar */
+.avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    margin: 0 auto 18px;
+    border: 4px solid #667eea;
+}
+
+/* Mở rộng 2: Navigation */
+.nav {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.nav a {
+    padding: 9px 14px;
+    background: #f2f1fe;
+    border-radius: 8px;
+    color: #4430a5;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.nav a:hover,
+.nav a:focus-visible,
+.nav a[aria-current="page"] {
+    background: #667eea;
+    color: #fff;
+}
+
+/* Hỗ trợ màn hình nhỏ */
+@media (max-width: 640px) {
+    body { padding: 16px; }
+    .container {
+        width: 100%;
+        padding: 24px;
+    }
+}
     </style>
 </head>
 <body>
     <div class="container">
         <h1> Hello, DevOps!</h1>
         <h2>Lab 1 — Trải nghiệm CI/CD Pipeline</h2>
+        <!-- Ảnh đại diện -->
+        <img
+            src="./assets/ảnh test.png"
+            alt="Ảnh đại diện minh họa của portfolio"
+            class="avatar"
+            width="120"
+            height="120"
+        >
 
+        <!-- Thanh điều hướng -->
+        <nav class="nav" aria-label="Điều hướng chính">
+            <a href="./index.html" aria-current="page">Home</a>
+            <a href="./about.html">About</a>
+            <a href="./contact.html">Contact</a>
+        </nav>
         <div class="info">
             <p> <strong>Bài học:</strong> DevOps Lab 1 — Tổng quan</p>
-            <p> <strong>Deploy bởi:</strong> GitHub Actions CI/CD</p>
-            <p> <strong>Ngày deploy:</strong> <span id="date"></span></p>
+            <p> <str ong>Deploy bởi:</strong> GitHub Actions CI/CD</p>
+            <p> <strong>Ngày truy cập:</strong> <span id="date"></span></p>
             <p> <strong>Pipeline status:</strong> <span class="status"> Automated</span></p>
         </div>
 
@@ -67,8 +126,13 @@
         </div>
     </div>
 
+
+    
     <script>
         document.getElementById('date').textContent = new Date().toLocaleDateString('vi-VN');
     </script>
 </body>
+
+
+
 </html>

@@ -1,0 +1,101 @@
+
+# DevOps Lab 1 - Lighthouse CI
+# Tu dong audit khi push code len main
+
+name: Lighthouse CI - Audit Portfolio
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    name: Audit Home, About and Contact
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Lay source code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Chuan bi website
+      - name: Prepare Website for Audit
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for file in index.html about.html contact.html; do
+            if [ ! -s "$file" ]; then
+              echo "Missing or empty HTML file: $file"
+              exit 1
+            fi
+          done
+
+          if [ ! -d assets ]; then
+            echo "Missing assets directory"
+            exit 1
+          fi
+
+          mkdir -p _site
+          cp index.html about.html contact.html _site/
+          cp -R assets _site/
+
+      # 3. Cai dat Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # 4. Cai dat Lighthouse CI
+      - name: Install Lighthouse CI
+        run: npm install --global @lhci/cli@0.15.1
+
+      # 5. Tao cau hinh Lighthouse
+      - name: Configure Lighthouse CI
+        shell: bash
+        run: |
+          cat > .lighthouserc.json <<'JSON'
+          {
+            "ci": {
+              "collect": {
+                "staticDistDir": "./_site",
+                "url": [
+                  "http://localhost/",
+                  "http://localhost/about.html",
+                  "http://localhost/contact.html"
+                ],
+                "numberOfRuns": 1
+              },
+              "assert": {
+                "assertions": {
+                  "categories:performance": ["warn", {"minScore": 0.70}],
+                  "categories:accessibility": ["warn", {"minScore": 0.80}],
+                  "categories:best-practices": ["warn", {"minScore": 0.80}],
+                  "categories:seo": ["warn", {"minScore": 0.80}]
+                }
+              },
+              "upload": {
+                "target": "filesystem",
+                "outputDir": "./lighthouse-reports"
+              }
+            }
+          }
+          JSON
+
+      # 6. Kiem tra 4 tieu chi
+      - name: Run Lighthouse CI
+        run: lhci autorun
+
+      # 7. Luu bao cao HTML va JSON
+      - name: Upload Lighthouse Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: lighthouse-reports/
+          if-no-files-found: warn
+          retention-days: 14

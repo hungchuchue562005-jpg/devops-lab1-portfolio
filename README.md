@@ -84,5 +84,5 @@ sửa trực tiếp nhánh đó có thể bị lần deploy tiếp theo ghi đè
 Theo dõi tại tab **Actions**:
 https://github.com/hungchuchue562005-jpg/devops-lab1-portfolio/actions
 
-Lưu ý: ngày hiển thị trong trang hiện lấy từ đồng hồ trình duyệt lúc mở trang,
+Lưu ý: “Ngày truy cập” hiển thị trong trang lấy từ đồng hồ trình duyệt lúc mở trang,
 không phải thời điểm GitHub triển khai.

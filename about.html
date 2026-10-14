@@ -1,0 +1,142 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>About - DevOps Lab 1</title>
+
+    <style>
+        /* Giữ thiết kế giống index.html */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva,
+                         Verdana, sans-serif;
+            background: linear-gradient(
+                135deg, #667eea 0%, #764ba2 100%
+            );
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+            padding: 16px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 48px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 32px;
+        }
+
+        h2 {
+            color: #764ba2;
+            margin-bottom: 24px;
+            font-size: 18px;
+            font-weight: normal;
+        }
+
+        .info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 16px 0;
+            text-align: left;
+        }
+
+        .info p {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .nav a {
+            padding: 9px 14px;
+            background: #f2f1fe;
+            border-radius: 8px;
+            color: #4430a5;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .nav a:hover,
+        .nav a:focus-visible,
+        .nav a[aria-current="page"] {
+            background: #667eea;
+            color: white;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <!-- Tiêu đề About -->
+        <h1>About Me</h1>
+        <h2>Giới thiệu bản thân</h2>
+
+        <!-- Navigation của trang About -->
+        <nav class="nav" aria-label="Điều hướng chính">
+            <a href="./index.html">Home</a>
+            <a href="./about.html"
+               aria-current="page">About</a>
+            <a href="./contact.html">Contact</a>
+        </nav>
+
+        <!-- Nội dung giới thiệu -->
+        <div class="info">
+            <p>
+                <strong>Giới thiệu:</strong>
+                Tôi là sinh viên ngành Công nghệ phần mềm.
+            </p>
+
+            <p>
+                <strong>Môn học:</strong>
+                Vận hành và Bảo trì phần mềm.
+            </p>
+
+            <p>
+                <strong>Kỹ năng:</strong>
+                HTML, CSS, Git, GitHub, CI/CD.
+            </p>
+
+            <p>
+                <strong>Mục tiêu:</strong>
+                Tìm hiểu quy trình DevOps và
+                triển khai website tự động.
+            </p>
+        </div>
+
+    </div>
+</body>
+</html>
