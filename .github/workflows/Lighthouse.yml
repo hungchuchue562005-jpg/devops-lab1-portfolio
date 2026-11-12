@@ -1,7 +1,4 @@
-
-# DevOps Lab 1 - Lighthouse CI
-# Tu dong audit khi push code len main
-
+# DevOps Lab 1 — audit riêng, không phụ thuộc workflow deploy.
 name: Lighthouse CI - Audit Portfolio
 
 on:
@@ -16,45 +13,38 @@ jobs:
   lighthouse:
     name: Audit Home, About and Contact
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
-      # 1. Lay source code
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 2. Chuan bi website
       - name: Prepare Website for Audit
         shell: bash
         run: |
           set -euo pipefail
-
           for file in index.html about.html contact.html; do
             if [ ! -s "$file" ]; then
               echo "Missing or empty HTML file: $file"
               exit 1
             fi
           done
-
-          if [ ! -d assets ]; then
-            echo "Missing assets directory"
+          if [ ! -s assets/avatar.png ]; then
+            echo "Missing or empty avatar: assets/avatar.png"
             exit 1
           fi
-
           mkdir -p _site
           cp index.html about.html contact.html _site/
           cp -R assets _site/
 
-      # 3. Cai dat Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      # 4. Cai dat Lighthouse CI
       - name: Install Lighthouse CI
         run: npm install --global @lhci/cli@0.15.1
 
-      # 5. Tao cau hinh Lighthouse
       - name: Configure Lighthouse CI
         shell: bash
         run: |
@@ -68,7 +58,12 @@ jobs:
                   "http://localhost/about.html",
                   "http://localhost/contact.html"
                 ],
-                "numberOfRuns": 1
+                "numberOfRuns": 3,
+                "settings": {
+                  "onlyCategories": [
+                    "performance", "accessibility", "best-practices", "seo"
+                  ]
+                }
               },
               "assert": {
                 "assertions": {
@@ -86,11 +81,70 @@ jobs:
           }
           JSON
 
-      # 6. Kiem tra 4 tieu chi
       - name: Run Lighthouse CI
-        run: lhci autorun
+        run: lhci autorun --failOnUploadFailure
 
-      # 7. Luu bao cao HTML va JSON
+      - name: Publish Scores to Job Summary
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+          const manifestPath = 'lighthouse-reports/manifest.json';
+          const write = text => fs.appendFileSync(summaryPath, text + '\n');
+          write('## Lighthouse CI — Portfolio\n');
+
+          if (!fs.existsSync(manifestPath)) {
+            write('Không có báo cáo hoàn chỉnh. Xem bước Run Lighthouse CI và logs.');
+            process.exit(1);
+          }
+
+          const categories = ['performance', 'accessibility', 'best-practices', 'seo'];
+          const thresholds = [70, 80, 80, 80];
+          const pages = new Map([
+            ['/', 'Home'],
+            ['/about.html', 'About'],
+            ['/contact.html', 'Contact']
+          ]);
+          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          const reports = manifest.filter(entry => entry.isRepresentativeRun);
+          const seen = new Set();
+          const rows = [];
+          write('| Trang | Performance | Accessibility | Best Practices | SEO |');
+          write('| --- | ---: | ---: | ---: | ---: |');
+
+          for (const entry of reports) {
+            const pathname = new URL(entry.url).pathname;
+            const page = pages.get(pathname);
+            if (!page || seen.has(pathname)) {
+              throw new Error(`Unexpected or duplicate page: ${entry.url}`);
+            }
+            const report = JSON.parse(fs.readFileSync(entry.jsonPath, 'utf8'));
+            if (report.runtimeError) throw new Error(report.runtimeError.message);
+            const scores = categories.map((category, index) => {
+              const score = report.categories?.[category]?.score;
+              if (typeof score !== 'number' || !Number.isFinite(score)) {
+                throw new Error(`Missing score for ${page}: ${category}`);
+              }
+              const value = Math.round(score * 100);
+              if (score < thresholds[index] / 100) {
+                console.log(`::warning title=Lighthouse ${page} ${category}::${value}/100; threshold ${thresholds[index]}/100`);
+              }
+              return value;
+            });
+            seen.add(pathname);
+            write(`| ${page} | ${scores.join(' | ')} |`);
+            rows.push({page, ...Object.fromEntries(categories.map((key, i) => [key, scores[i]]))});
+          }
+
+          console.table(rows);
+          if (seen.size !== pages.size) throw new Error('Missing reports for one or more pages');
+          write('\nĐiểm thực tế trên thang 0–100, từ lần chạy đại diện do LHCI chọn trong 3 lần audit mobile mỗi trang.');
+          write('\nNgưỡng cảnh báo: Performance 70; Accessibility, Best Practices và SEO 80.');
+          write('\nTải artifact `lighthouse-reports` để xem báo cáo HTML/JSON của từng lần chạy.');
+          NODE
+
       - name: Upload Lighthouse Reports
         if: always()
         uses: actions/upload-artifact@v4
